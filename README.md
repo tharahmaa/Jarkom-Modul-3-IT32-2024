@@ -8,4 +8,4 @@
 | Nur Azka Rahadiansyah              | 5027221064 |
 
 
-![Topologi](topologi.png)
+![Topologi](topologi.jpg)
