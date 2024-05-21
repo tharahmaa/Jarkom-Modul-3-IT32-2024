@@ -180,7 +180,7 @@
   ```
 
 
-## SETUP
+## SETUP DI BASHRC
 
 - Irulan (DNS Server):
 
@@ -214,6 +214,9 @@
   echo 'nameserver 10.63.3.2' > /etc/resolv.conf  
   apt-get update
   apt install isc-dhcp-server -y
+  dhcpd --version
+
+  echo INTERFACES="eth0" > /etc/default/isc-dhcp-serverm
   ```
 
 - Arakis DHCP Relay:
@@ -275,19 +278,19 @@
   ```
   echo 'nameserver 10.63.3.2' > /etc/resolv.conf
   apt-get update
-  apt-get install lynx -y
   apt-get install mariadb-client -y
-  # Test connection from worker to database
-  # mariadb --host=10.63.2.1 --port=3306   --user=kelompokit32 --password=passwordit32 dbkelompokit32 -e "SHOW DATABASES;"
+  apt-get install lynx -y
   apt-get install -y lsb-release ca-certificates apt-transport-https software-properties-common gnupg2
   curl -sSLo /usr/share/keyrings/deb.sury.org-php.gpg https://packages.sury.org/php/apt.gpg
-  sh -c 'echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list'
-  apt-get update
-  apt-get install php8.0-mbstring php8.0-xml php8.0-cli   php8.0-common php8.0-intl php8.0-opcache php8.0-readline php8.0-mysql php8.0-fpm php8.0-curl unzip wget -y
-  apt-get install nginx -y
-  
-  service nginx start
-  service php8.0-fpm start
+  sh -c 'echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.li$apt-get update
+  apt-get install php8.0-mbstring php8.0-xml php8.0-cli php8.0-common php8.0-intl php8.0-opcache php8.0-readline php8.0-mysql php8.0-fpm php8.0-curl $apt-get install nginx -y
+  wget https://getcomposer.org/download/2.0.13/composer.phar
+  chmod +x composer.phar
+  mv composer.phar /usr/bin/composer
+  apt-get install git -y
+  git clone https://github.com/martuafernando/laravel-praktikum-jarkom /var/www/laravel-praktikum-jarkom
+  composer update
+  composer install
   ```
 
 - Dmitri, Paul client:
@@ -1005,3 +1008,572 @@ sebanyak tiga percobaan dan lakukan testing sebanyak 100 request dengan 10 reque
 
 
 20. Nampaknya hanya menggunakan PHP-FPM tidak cukup untuk meningkatkan performa dari worker maka implementasikan Least-Conn pada Stilgar. Untuk testing kinerja dari worker tersebut dilakukan sebanyak 100 request dengan 10 request/second.
+
+
+## SCRIPT KESELURUHAN:
+
+- Arakis:
+
+  ```
+  apt-get update
+  apt-get install isc-dhcp-relay -y
+  service isc-dhcp-relay start
+  
+  relay="SERVERS=\"10.63.3.1\" 
+  INTERFACES=\"eth1 eth2 eth3 eth4\"
+  OPTIONS=\"\"
+  "
+  echo "$relay" > /etc/default/isc-dhcp-relay
+  
+  echo net.ipv4.ip_forward=1 > /etc/sysctl.conf
+  
+  service isc-dhcp-relay restart
+  ```
+  
+- Chani:
+
+  ```
+  mysql -e "CREATE USER 'kelompokit32'@'%' IDENTIFIED BY 'passwordit32';"
+  mysql -e "CREATE USER 'kelompokit32'@'atreides.it32.com' IDENTIFIED BY 'passwordit32';"
+  mysql -e "CREATE DATABASE dbkelompokit32;"
+  mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'kelompokit32'@'%';"
+  mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'kelompokit32'@'atreides.it32.com';"
+  mysql -e "FLUSH PRIVILEGES;"
+  
+  mysql="[mysqld]
+  skip-networking=0
+  skip-bind-address
+  "
+  echo "$mysql" > /etc/mysql/my.cnf
+  
+  service mysql restart
+  ```
+  
+- Duncan:
+
+  ```
+  
+  cd /var/www/laravel-praktikum-jarkom && composer update
+  composer install
+  
+  cp /var/www/laravel-praktikum-jarkom/.env.example /var/www/laravel-praktikum-jarkom/.env
+  
+  echo 'APP_NAME=Laravel
+  APP_ENV=local
+  APP_KEY=
+  APP_DEBUG=true
+  APP_URL=http://localhost
+  
+  LOG_CHANNEL=stack
+  LOG_DEPRECATIONS_CHANNEL=null
+  LOG_LEVEL=debug
+  
+  DB_CONNECTION=mysql
+  DB_HOST=10.63.4.1
+  DB_PORT=3306
+  DB_DATABASE=dbkelompokit32
+  DB_USERNAME=kelompokit32
+  DB_PASSWORD=passwordit32
+  
+  BROADCAST_DRIVER=log
+  CACHE_DRIVER=file
+  FILESYSTEM_DISK=local
+  QUEUE_CONNECTION=sync
+  SESSION_DRIVER=file
+  SESSION_LIFETIME=120
+  
+  MEMCACHED_HOST=127.0.0.1
+  
+  REDIS_HOST=127.0.0.1
+  REDIS_PASSWORD=null
+  REDIS_PORT=6379
+  
+  MAIL_MAILER=smtp
+  MAIL_HOST=mailpit
+  MAIL_PORT=1025
+  MAIL_USERNAME=null
+  MAIL_PASSWORD=null
+  MAIL_ENCRYPTION=null
+  MAIL_FROM_ADDRESS="hello@example.com"
+  MAIL_FROM_NAME="${APP_NAME}"
+  
+  AWS_ACCESS_KEY_ID=
+  AWS_SECRET_ACCESS_KEY=
+  AWS_DEFAULT_REGION=us-east-1
+  AWS_BUCKET=
+  AWS_USE_PATH_STYLE_ENDPOINT=false
+  
+  PUSHER_APP_ID=
+  PUSHER_APP_KEY=
+  PUSHER_APP_SECRET=
+  PUSHER_HOST=
+  PUSHER_PORT=443
+  PUSHER_SCHEME=https
+  PUSHER_APP_CLUSTER=mt1
+  
+  VITE_PUSHER_APP_KEY="${PUSHER_APP_KEY}"
+  VITE_PUSHER_HOST="${PUSHER_HOST}"
+  VITE_PUSHER_PORT="${PUSHER_PORT}"
+  VITE_PUSHER_SCHEME="${PUSHER_SCHEME}"
+  VITE_PUSHER_APP_CLUSTER="${PUSHER_APP_CLUSTER}"
+  ' > /var/www/laravel-praktikum-jarkom/.env
+  
+  service nginx start
+  cd /var/www/laravel-praktikum-jarkom
+  composer update
+  composer install
+  service nginx start
+  php artisan migrate:fresh
+  php artisan db:seed --class=AiringsTableSeeder
+  php artisan key:generate
+  php artisan config:cache
+  php artisan migrate
+  php artisan db:seed
+  php artisan storage:link
+  php artisan jwt:secret
+  php artisan config:clear
+  chown -R www-data.www-data /var/www/laravel-praktikum-jarkom/storage
+  
+  echo 'server {
+  
+      listen 8001;
+  
+      root /var/www/laravel-praktikum-jarkom/public;
+  
+      index index.php index.html index.htm;
+      server_name _;
+  
+      location / {
+              try_files $uri $uri/ /index.php?$query_string;
+      }
+  
+      location ~ \.php$ {
+      include snippets/fastcgi-php.conf;
+      fastcgi_pass unix:/var/run/php/php8.0-fpm.sock;
+      }
+  
+  location ~ /\.ht {
+              deny all;
+      }
+  
+      error_log /var/log/nginx/fff_error.log;
+      access_log /var/log/nginx/fff_access.log;
+  }
+  ' > /etc/nginx/sites-available/fff
+  
+  ln -s /etc/nginx/sites-available/fff /etc/nginx/sites-enabled/
+  chown -R www-data.www-data /var/www/laravel-praktikum-jarkom/storage
+  service php8.0-fpm start
+  service nginx restart
+  
+  
+  
+  
+  
+
+  ```
+  
+- Irulan:
+
+  Script 1:
+
+  ```
+    #JANGAN LUPA GANTI RESOLV.CONF CLIENT (DMITRI/PAUL) KE IP IRULAN (10.63.3.2)
+  
+  echo 'zone "atreides.it32.com" {
+          type master;
+          file "/etc/bind/jarkom/atreides.it32.com";
+  };
+  
+  zone "harkonen.it32.com" {
+          type master;
+          file "/etc/bind/jarkom/harkonen.it32.com";
+  };' > /etc/bind/named.conf.local
+  
+  mkdir /etc/bind/jarkom
+  
+  echo ';
+  ; BIND data file for local loopback interface
+  ;
+  $TTL    604800
+  @       IN      SOA     atreides.it32.com. root.atreides.it32.com. (
+                          2024051601      ; Serial
+                          604800          ; Refresh
+                          86400           ; Retry
+                          2419200         ; Expire
+                          604800 )        ; Negative Cache TTL
+  ;
+  @               IN      NS      atreides.it32.com.
+  @               IN      A       10.63.4.2 ; IP Stilgar' > /etc/bind/jarkom/atreides.it32.com
+  
+  echo ';
+  ; BIND data file for local loopback interface
+  ;
+  $TTL    604800
+  @       IN      SOA     harkonen.it32.com.  harkonen.it32.com.  (
+                          2024051601      ; Serial
+                          604800          ; Refresh
+                          86400           ; Retry
+                          2419200         ; Expire
+                          604800 )        ; Negative Cache TTL
+  ;
+  @               IN      NS      harkonen.it32.com.
+  @               IN      A       10.63.4.2 ; IP Stilgar' > /etc/bind/jarkom/harkonen.it32.com
+  
+  echo 'options {
+          directory "/var/cache/bind";
+  
+          forwarders {
+                  192.168.122.1;
+          };
+  
+          // dnssec-validation auto;
+          allow-query{any;};
+          auth-nxdomain no;    # conform to RFC1035
+          listen-on-v6 { any; };
+  }; ' >/etc/bind/named.conf.options
+  
+  service bind9 restart
+  ```
+
+  Script 2:
+
+  ```
+    #JANGAN LUPA GANTI RESOLV.CONF CLIENT (DMITRI/PAUL) KE IP IRULAN (10.63.3.2)
+  
+  echo 'zone "atreides.it32.com" {
+          type master;
+          file "/etc/bind/jarkom/atreides.it32.com";
+  };
+  
+  zone "harkonen.it32.com" {
+          type master;
+          file "/etc/bind/jarkom/harkonen.it32.com";
+  };' > /etc/bind/named.conf.local
+  
+  mkdir /etc/bind/jarkom
+  
+  echo ';
+  ; BIND data file for local loopback interface
+  ;
+  $TTL    604800
+  @       IN      SOA     atreides.it32.com. root.atreides.it32.com. (
+                          2024051601      ; Serial
+                          604800          ; Refresh
+                          86400           ; Retry
+                          2419200         ; Expire
+                          604800 )        ; Negative Cache TTL
+  ;
+  @               IN      NS      atreides.it32.com.
+  @               IN      A       10.63.2.2 ; IP Leto Laravel Workerr' > /etc/bind/jarkom/atreides.it32.com
+  
+  echo ';
+  ; BIND data file for local loopback interface
+  ;
+  $TTL    604800
+  @       IN      SOA     harkonen.it32.com.  harkonen.it32.com.  (
+                          2024051601      ; Serial
+                          604800          ; Refresh
+                          86400           ; Retry
+                          2419200         ; Expire
+                          604800 )        ; Negative Cache TTL
+  ;
+  @               IN      NS      harkonen.it32.com.
+  @               IN      A       10.63.1.2 ; IP Vladimir PHP Worker' > /etc/bind/jarkom/harkonen.it32.com
+  
+  echo 'options {
+          directory "/var/cache/bind";
+  
+          forwarders {
+                  192.168.122.1;
+          };
+  
+          // dnssec-validation auto;
+          allow-query{any;};
+          auth-nxdomain no;    # conform to RFC1035
+          listen-on-v6 { any; };
+  }; ' >/etc/bind/named.conf.options
+  
+  service bind9 restart
+  ```
+
+  
+- Leto:
+  
+  ```
+    #INI UNTUK SEMUA LARAVEL WORKER
+  
+  cd /var/www/laravel-praktikum-jarkom && composer update
+  composer install
+  
+  cp /var/www/laravel-praktikum-jarkom/.env.example /var/www/laravel-praktikum-jarkom/.env
+  
+  echo 'APP_NAME=Laravel
+  APP_ENV=local
+  APP_KEY=
+  APP_DEBUG=true
+  APP_URL=http://localhost
+  
+  LOG_CHANNEL=stack
+  LOG_DEPRECATIONS_CHANNEL=null
+  LOG_LEVEL=debug
+  
+  DB_CONNECTION=mysql
+  DB_HOST=10.63.4.1
+  DB_PORT=3306
+  DB_DATABASE=dbkelompokit32
+  DB_USERNAME=kelompokit32
+  DB_PASSWORD=passwordit32
+  
+  BROADCAST_DRIVER=log
+  CACHE_DRIVER=file
+  FILESYSTEM_DISK=local
+  QUEUE_CONNECTION=sync
+  SESSION_DRIVER=file
+  SESSION_LIFETIME=120
+  
+  MEMCACHED_HOST=127.0.0.1
+  
+  REDIS_HOST=127.0.0.1
+  REDIS_PASSWORD=null
+  REDIS_PORT=6379
+  
+  MAIL_MAILER=smtp
+  MAIL_HOST=mailpit
+  MAIL_PORT=1025
+  MAIL_USERNAME=null
+  MAIL_PASSWORD=null
+  MAIL_ENCRYPTION=null
+  MAIL_FROM_ADDRESS="hello@example.com"
+  MAIL_FROM_NAME="${APP_NAME}"
+  
+  AWS_ACCESS_KEY_ID=
+  AWS_SECRET_ACCESS_KEY=
+  AWS_DEFAULT_REGION=us-east-1
+  AWS_BUCKET=
+  AWS_USE_PATH_STYLE_ENDPOINT=false
+  
+  PUSHER_APP_ID=
+  PUSHER_APP_KEY=
+  PUSHER_APP_SECRET=
+  PUSHER_HOST=
+  PUSHER_PORT=443
+  PUSHER_SCHEME=https
+  PUSHER_APP_CLUSTER=mt1
+  
+  VITE_PUSHER_APP_KEY="${PUSHER_APP_KEY}"
+  VITE_PUSHER_HOST="${PUSHER_HOST}"
+  VITE_PUSHER_PORT="${PUSHER_PORT}"
+  VITE_PUSHER_SCHEME="${PUSHER_SCHEME}"
+  VITE_PUSHER_APP_CLUSTER="${PUSHER_APP_CLUSTER}"
+  ' > /var/www/laravel-praktikum-jarkom/.env
+  
+  service nginx start
+  cd /var/www/laravel-praktikum-jarkom
+  composer update
+  composer install
+  service nginx start
+  php artisan migrate:fresh
+  php artisan db:seed --class=AiringsTableSeeder
+  php artisan key:generate
+  php artisan config:cache
+  php artisan migrate
+  php artisan db:seed
+  php artisan storage:link
+  php artisan jwt:secret
+  php artisan config:clear
+  chown -R www-data.www-data /var/www/laravel-praktikum-jarkom/storage
+  
+  echo 'server {
+  
+      listen 8001;
+  
+      root /var/www/laravel-praktikum-jarkom/public;
+  
+      index index.php index.html index.htm;
+      server_name _;
+  
+      location / {
+              try_files $uri $uri/ /index.php?$query_string;
+      }
+  
+      location ~ \.php$ {
+      include snippets/fastcgi-php.conf;
+      fastcgi_pass unix:/var/run/php/php8.0-fpm.sock;
+      }
+  
+  location ~ /\.ht {
+              deny all;
+      }
+  
+      error_log /var/log/nginx/fff_error.log;
+      access_log /var/log/nginx/fff_access.log;
+  }
+  ' > /etc/nginx/sites-available/fff
+  
+  ln -s /etc/nginx/sites-available/fff /etc/nginx/sites-enabled/
+  chown -R www-data.www-data /var/www/laravel-praktikum-jarkom/storage
+  service php8.0-fpm start
+  service nginx restart
+  ```
+  
+- Mohiam:
+
+  ```
+  interfaces="INTERFACESv4=\"eth0\"
+  INTERFACESv6=\"\"
+  "
+  echo "$interfaces" > /etc/default/isc-dhcp-server
+  
+  subnet="option domain-name \"example.org\";
+  option domain-name-servers ns1.example.org, ns2.example.org;
+  
+  default-lease-time 600;
+  max-lease-time 7200;
+  
+  ddns-update-style-none;
+  
+  subnet 10.63.1.0 netmask 255.255.255.0 {
+      range 10.63.1.14 10.63.1.28;
+      range 10.63.1.49 10.63.1.70;
+      option routers 10.63.1.0;
+      option broadcast-address 10.63.1.255;
+      option domain-name-servers 10.63.3.2;
+      default-lease-time 300;
+      max-lease-time 5220;
+  }
+  
+  subnet 10.63.2.0 netmask 255.255.255.0 {
+      range 10.63.2.15 10.63.2.25;
+      range 10.63.2.200 10.63.2.210;
+      option routers 10.63.2.0;
+      option broadcast-address 10.63.2.255;
+      option domain-name-servers 10.63.3.2;
+      default-lease-time 1200;
+      max-lease-time 5220;
+  }
+  
+  subnet 10.63.3.0 netmask 255.255.255.0 {
+  }
+  
+  subnet 10.63.4.0 netmask 255.255.255.0 {
+  }
+  
+  host Dmitri {
+      hardware ethernet 92:6a:4b:8f:b3:cf;
+      fixed-address 10.63.1.67;
+  }
+  "
+  echo "$subnet" > /etc/dhcp/dhcpd.conf
+  
+  service isc-dhcp-server restart
+  ```
+  
+- Stilgar:
+
+  ```
+  service nginx start
+
+  cp /etc/nginx/sites-available/default /etc/nginx/sites-available/lb_php
+  
+  mkdir /etc/nginx/supersecret
+  htpasswd -c -b /etc/nginx/supersecret/.htpasswd secmart kcksit32
+  
+  
+  echo '
+      upstream worker { # (ip_hash, least_conn, hash $request_uri consistent)
+      #hash $request_uri consistent;
+      #least_conn;
+      #ip_hash;
+      server 10.63.1.2:80;
+      server 10.63.1.3:80;
+      server 10.63.1.4:80;
+  }
+  
+   server {
+          listen 80;
+          root /var/www/html;
+          index index.html index.htm index.nginx-debian.html;
+  
+          server_name harkonen.it32.com;
+  
+          location / {
+                  allow 10.63.1.37;
+                  allow 10.63.1.67;
+                  allow 10.63.2.203;
+                  allow 10.63.2.207;
+                  deny all;
+                  proxy_pass http://worker;
+                  auth_basic "Restricted Access";
+                  auth_basic_user_file /etc/nginx/supersecret/.htpasswd;
+          }
+  
+          location /dune {
+                  proxy_pass https://www.dunemovie.com.au/;
+                  proxy_set_header Host www.dunemovie.com.au;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto $scheme;
+                  auth_basic "Restricted Access";
+                  auth_basic_user_file /etc/nginx/supersecret/.htpasswd;
+          }
+  } ' > /etc/nginx/sites-available/lb_php
+  
+  ln -sf /etc/nginx/sites-available/lb_php /etc/nginx/sites-enabled/
+  
+  if [ -f /etc/nginx/sites-enabled/default ]; then
+      rm /etc/nginx/sites-enabled/default
+  fi
+  
+  echo 'upstream pekerja { #(round-robin(default), ip_hash, least_conn, hash $request_uri consistent)
+      least_conn;
+      server 10.63.2.2:8001;
+      server 10.63.2.3:8002;
+      server 10.63.2.4:8003;
+  }
+  
+  server {
+      listen 80;
+      server_name atreides.it32.com;
+  
+      location / {
+          proxy_pass http://pekerja;
+      }
+  }
+  ' > /etc/nginx/sites-available/laravel-fff
+  
+  ln -s /etc/nginx/sites-available/laravel-fff /etc/nginx/sites-enabled/
+  
+  service nginx restart
+  ```
+  
+- Vladimir:
+
+  ```
+  #INI UNTUK SEMUA PHP WORKER
+
+  cp /etc/nginx/sites-available/default /etc/nginx/sites-available/harkonen.it32.com
+  ln -s /etc/nginx/sites-available/harkonen.it32.com /etc/nginx/sites-enabled/
+  rm /etc/nginx/sites-enabled/default
+  
+  echo 'server {
+       listen 80;
+       server_name _;
+  
+       root /var/www/harkonen.it32.com;
+       index index.php index.html index.htm;
+  
+       location / {
+           try_files $uri $uri/ /index.php?$query_string;
+       }
+  
+       location ~ \.php$ {
+           include snippets/fastcgi-php.conf;
+           fastcgi_pass unix:/run/php/php7.3-fpm.sock;
+           fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+           include fastcgi_params;
+       }
+   }' > /etc/nginx/sites-available/harkonen.it32.com
+  
+   service nginx restart
+  ```
