@@ -528,6 +528,12 @@ service isc-dhcp-relay start
 
 Lalu pada file `/etc/sysctl.conf` lakukan uncommented pada `net.ipv4.ip_forward=1`
 
+Hasil nomor 1-4:
+
+![dmitri](dmitri1-4.jpg)
+
+![paul](paul1-4.jpg)
+
 5.  Durasi DHCP server meminjamkan alamat IP kepada Client yang melalui House Harkonen selama 5 menit sedangkan pada client yang melalui House Atreides selama 20 menit. Dengan waktu maksimal dialokasikan untuk peminjaman alamat IP selama 87 menit
 
   Mohiam:
@@ -586,6 +592,14 @@ Lalu pada file `/etc/sysctl.conf` lakukan uncommented pada `net.ipv4.ip_forward=
 
   ```
 
+Hasil nomor 5:
+
+![dmitri](dmitri5.jpg)
+
+![paul](paul5.jpg)
+
+![dmitri](pingdmitri1-5.jpg)
+
 
 6.  Vladimir Harkonen memerintahkan setiap worker(harkonen) PHP, untuk melakukan konfigurasi virtual host untuk website berikut dengan menggunakan php 7.3
 
@@ -631,6 +645,12 @@ Lalu pada file `/etc/sysctl.conf` lakukan uncommented pada `net.ipv4.ip_forward=
   
   service nginx restart
   ```
+
+Hasil nomor 6:
+
+![dmitri](dmitriatre.jpg)
+
+![no6](no6.jpg)
 
 7.  Aturlah agar Stilgar dari fremen dapat dapat bekerja sama dengan maksimal, lalu lakukan testing dengan 5000 request dan 150 request/second
 
