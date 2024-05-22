@@ -652,7 +652,17 @@ Hasil nomor 6:
 
 ![no6](no6.jpg)
 
+Mohiam sudah jalan:
+
+![mohiam](mohiamgo.jpg)
+
+Irulan sudah jalan:
+
+![irulan](irulango.jpg)
+
 7.  Aturlah agar Stilgar dari fremen dapat dapat bekerja sama dengan maksimal, lalu lakukan testing dengan 5000 request dan 150 request/second
+
+![no7](no7.jpg)
 
 8.  Karena diminta untuk menuliskan peta tercepat menuju spice, buatlah analisis hasil testing dengan 500 request dan 50 request/second masing-masing algoritma Load Balancer dengan ketentuan sebagai berikut:
 Nama Algoritma Load Balancer
@@ -660,7 +670,25 @@ Report hasil testing pada Apache Benchmark
 Grafik request per second untuk masing masing algoritma. 
 Analisis
 
-9. Dengan menggunakan algoritma Least-Connection, lakukan testing dengan menggunakan 3 worker, 2 worker, dan 1 worker sebanyak 1000 request dengan 10 request/second, kemudian tambahkan grafiknya pada peta.
+IP Hash:
+
+![no8iph](no8iph.jpg)
+
+![no8hashreq](no8hashreq.jpg)
+
+10. Dengan menggunakan algoritma Least-Connection, lakukan testing dengan menggunakan 3 worker, 2 worker, dan 1 worker sebanyak 1000 request dengan 10 request/second, kemudian tambahkan grafiknya pada peta.
+
+1 worker:
+
+![no9-1](no9-1.jpg)
+
+2 worker:
+
+![no9-2](no9.jpg)
+
+3 worker:
+
+![no9-3](no9-3.jpg)
 
 10. Selanjutnya coba tambahkan keamanan dengan konfigurasi autentikasi di LB dengan dengan kombinasi username: “secmart” dan password: “kcksyyy”, dengan yyy merupakan kode kelompok. Terakhir simpan file “htpasswd” nya di /etc/nginx/supersecret/
 
@@ -676,6 +704,8 @@ Analisis
   auth_basic_user_file /etc/nginx/rahasisakita/htpasswd;
 
   ```
+
+![no10](no10.jpg)
 
 11. Lalu buat untuk setiap request yang mengandung /dune akan di proxy passing menuju halaman https://www.dunemovie.com.au/. (11) hint: (proxy_pass)
 
@@ -721,6 +751,8 @@ Analisis
   }' > /etc/nginx/sites-available/lb_php
 
   ```
+
+![no11](no11.jpg)
 
 12. Selanjutnya LB ini hanya boleh diakses oleh client dengan IP [Prefix IP].1.37, [Prefix IP].1.67, [Prefix IP].2.203, dan [Prefix IP].2.207. (12) hint: (fixed in dulu clientnya)
 
@@ -830,8 +862,11 @@ Analisis
   GRANT ALL PRIVILEGES ON *.* TO 'kelompokit32'@'localhost';
   FLUSH PRIVILEGES;
   ```
+![no13](no13.jpg)
 
 14. Leto, Duncan, dan Jessica memiliki atreides Channel sesuai dengan quest guide berikut. Jangan lupa melakukan instalasi PHP8.0 dan Composer
+
+![no14](no14.jpg)
 
 15. atreides Channel memiliki beberapa endpoint yang harus ditesting sebanyak 100 request dengan 10 request/second. Tambahkan response dan hasil testing pada grimoire.
 POST /auth/register
@@ -847,6 +882,7 @@ POST /auth/register
   ```
   ab -n 100 -c 10 -p register.json -T application/json http://10.63..:8001/api/auth/register
   ```
+![no15](no15.jpg)
 
 16. POST /auth/login
 
@@ -857,6 +893,7 @@ POST /auth/register
     "password": "passwordit32",
   }' > login.json ab -n 100 -c 10 -p login.json -T application/json http://10.63..:8001/api/auth/login
   ```
+![no16](no16.jpg)
 
 17. GET /me
 
